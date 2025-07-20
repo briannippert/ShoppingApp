@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Server.Configuration;
-using Server.Data;
-using Server.Services;
 using System.Text;
+using System.Security.Claims;
+using Server.Data;
+using Server.Models;
+using Server.Services;
+using BCrypt.Net;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,3 +54,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
