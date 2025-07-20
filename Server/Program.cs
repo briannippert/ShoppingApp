@@ -1,32 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
+using System.Security.Claims;
 using Server.Data;
 using Server.Models;
+using Server.Services;
 using BCrypt.Net;
-
-string GenerateJwtToken(User user, string secret)
-{
-    var tokenHandler = new JwtSecurityTokenHandler();
-    var key = Encoding.ASCII.GetBytes(secret);
-    var descriptor = new SecurityTokenDescriptor
-    {
-        Subject = new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.FullName),
-            new Claim(ClaimTypes.Email, user.Email)
-        }),
-        Expires = DateTime.UtcNow.AddHours(1),
-        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-    };
-
-    var token = tokenHandler.CreateToken(descriptor);
-    return tokenHandler.WriteToken(token);
-}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +19,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var jwtSecret = builder.Configuration["JwtSecret"] ?? "supersecret";
+var jwtSecret = builder.Configuration["JwtSecret"] ?? "thisisaveryverylongsecretkey123456";
 var key = Encoding.ASCII.GetBytes(jwtSecret);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -96,7 +76,7 @@ app.MapPost("/api/login", async (ApplicationDbContext db, LoginDto loginDto) =>
         return Results.Unauthorized();
     }
 
-    var token = GenerateJwtToken(user, jwtSecret);
+    var token = JwtService.GenerateJwtToken(user, jwtSecret);
     return Results.Ok(new { token });
 });
 
@@ -174,3 +154,5 @@ record UserDto(string FullName, string Email, string Password);
 record LoginDto(string Email, string Password);
 record UpdateUserDto(string? FullName, string? Email);
 record ChangePasswordDto(string OldPassword, string NewPassword);
+
+public partial class Program { }
